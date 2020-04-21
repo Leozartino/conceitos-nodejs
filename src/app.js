@@ -18,8 +18,8 @@ function validateRepository(request, response, next) {
     (repository) => repository.id === id
   );
 
-  if (repositoryIndex < 0) {
-    return response.status(400).json({ error: "Repository NOT FOUND" });
+  if (!isUuid(id) || repositoryIndex < 0) {
+    return response.status(400).json({ error: "Repository or Id Not Found" });
   }
 
   return next();
@@ -28,7 +28,13 @@ function validateRepository(request, response, next) {
 app.use("/repositories/:id", validateRepository);
 
 app.get("/repositories", (request, response) => {
-  response.json(repositories);
+  const { title } = request.query;
+
+  const result = title
+    ? repositories.filter((repository) => repository.title.includes(title))
+    : repositories;
+
+  response.json(result);
 });
 
 app.post("/repositories", (request, response) => {
